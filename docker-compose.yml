@@ -3,13 +3,48 @@ services:
   thumbor:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile_inline: |
+        FROM python:3.9
+        WORKDIR /app
+        ARG STORAGE \
+            REDIS_STORAGE_IGNORE_ERRORS \
+            REDIS_STORAGE_SERVER_PORT \
+            REDIS_STORAGE_SERVER_HOST \
+            REDIS_STORAGE_SERVER_DB \
+            REDIS_STORAGE_SERVER_PASSWORD \
+            REDIS_STORAGE_MODE \
+            REDIS_RESULT_STORAGE_IGNORE_ERRORS \
+            RESULT_STORAGE \
+            REDIS_RESULT_STORAGE_SERVER_PORT \
+            REDIS_RESULT_STORAGE_SERVER_HOST \
+            REDIS_RESULT_STORAGE_SERVER_DB \
+            REDIS_RESULT_STORAGE_SERVER_PASSWORD \
+            REDIS_RESULT_STORAGE_MODE
+        ENV STORAGE=${STORAGE} \
+            REDIS_STORAGE_IGNORE_ERRORS=${REDIS_STORAGE_IGNORE_ERRORS} \
+            REDIS_STORAGE_SERVER_PORT=${REDIS_STORAGE_SERVER_PORT} \
+            REDIS_STORAGE_SERVER_HOST=${REDIS_STORAGE_SERVER_HOST} \
+            REDIS_STORAGE_SERVER_DB=${REDIS_STORAGE_SERVER_DB} \
+            REDIS_STORAGE_SERVER_PASSWORD=${REDIS_STORAGE_SERVER_PASSWORD} \
+            REDIS_STORAGE_MODE=${REDIS_STORAGE_MODE} \
+            REDIS_RESULT_STORAGE_IGNORE_ERRORS=${REDIS_RESULT_STORAGE_IGNORE_ERRORS} \
+            RESULT_STORAGE=${RESULT_STORAGE} \
+            REDIS_RESULT_STORAGE_SERVER_PORT=${REDIS_RESULT_STORAGE_SERVER_PORT} \
+            REDIS_RESULT_STORAGE_SERVER_HOST=${REDIS_RESULT_STORAGE_SERVER_HOST} \
+            REDIS_RESULT_STORAGE_SERVER_DB=${REDIS_RESULT_STORAGE_SERVER_DB} \
+            REDIS_RESULT_STORAGE_SERVER_PASSWORD=${REDIS_RESULT_STORAGE_SERVER_PASSWORD} \
+            REDIS_RESULT_STORAGE_MODE=${REDIS_RESULT_STORAGE_MODE}
+        COPY requirements.txt .
+        RUN pip install --no-cache-dir -r requirements.txt
+        COPY . .
+        CMD ["thumbor"]
     container_name: thumbor
     ports:
       - "8888:8888"
     depends_on:
       - redis
     environment:
+      STORAGE: "tc_redis.storages.redis_storage"
       REDIS_STORAGE_IGNORE_ERRORS: True
       REDIS_STORAGE_SERVER_PORT: 6379
       REDIS_STORAGE_SERVER_HOST: "redis"
@@ -23,8 +58,6 @@ services:
       REDIS_RESULT_STORAGE_SERVER_DB: 0
       REDIS_RESULT_STORAGE_SERVER_PASSWORD: None
       REDIS_RESULT_STORAGE_MODE: "single_node"
-    volumes:
-      - "./thumbor.conf:/app/thumbor.conf"
   redis:
     image: redis:latest
     container_name: redis
