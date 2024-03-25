@@ -35,7 +35,7 @@ services:
             REDIS_RESULT_STORAGE_SERVER_PASSWORD=${REDIS_RESULT_STORAGE_SERVER_PASSWORD} \
             REDIS_RESULT_STORAGE_MODE=${REDIS_RESULT_STORAGE_MODE}
         COPY requirements.txt .
-        RUN pip install --no-cache-dir -r requirements.txt
+        RUN pip install --no-cache-dir tc-redis==2.5.0 thumbor==7.7.4 pycurl==7.45.3
         COPY . .
         CMD ["thumbor"]
     container_name: thumbor
