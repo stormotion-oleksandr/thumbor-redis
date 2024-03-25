@@ -27,8 +27,8 @@ services:
       - STORAGE=tc_redis.storages.redis_storage
       - RESPECT_ORIENTATION=True
       - PRESERVE_EXIF_INFO=True
-      - HTTP_LOADER_PROXY_HOST="http://10.44.1.129"
-      - HTTP_LOADER_PROXY_PORT=8080
+      # - HTTP_LOADER_PROXY_HOST="http://10.44.1.129"
+      # - HTTP_LOADER_PROXY_PORT=8080
       - TC_AWS_REGION=pme-dev
       - TC_AWS_ENDPOINT=http://10.44.1.130:8078
       - TC_AWS_LOADER_BUCKET=mindance-dev
@@ -53,12 +53,13 @@ services:
       - ./data/thumbor/aws:/app/.aws
       - ./data/thumbor/cache_storage:/tmp
     # command: pip install tc_redis && thumbor
-    command: sh -c "pip install tc_redis; thumbor"
+    # command: sh -c "pip install tc_redis" && thumbor --port=$THUMBOR_PORT -l ${LOG_LEVEL:-debug} --processes=${THUMBOR_NUM_PROCESSES:-1}
+    command: sh -c "pip install tc_redis && echo $? && echo $? && thumbor --port=8075 -l ${LOG_LEVEL:-debug} --processes=${THUMBOR_NUM_PROCESSES:-1} && echo $?"
     depends_on:
       - redis
     restart: always
     ports:
-      - "8075:80"
+      - "8075:8075"
     # networks:
     #   - global
     # deploy:
