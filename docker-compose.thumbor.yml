@@ -52,7 +52,7 @@ services:
       # - /Users/docker/thumbor/cache_storage:/tmp
       - ./data/thumbor/aws:/app/.aws
       - ./data/thumbor/cache_storage:/tmp
-    command: pip install --no-cache-dir tc_redis && thumbor
+    command: pip install --upgrade pip && pip install tc_redis && thumbor
     depends_on:
       - redis
     restart: always
