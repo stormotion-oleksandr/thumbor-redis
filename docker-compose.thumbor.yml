@@ -57,7 +57,7 @@ services:
       - redis
     restart: always
     ports:
-      - "8075:8075"
+      - "8075:80"
     # networks:
     #   - global
     # deploy:
