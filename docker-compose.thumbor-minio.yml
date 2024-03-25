@@ -1,0 +1,79 @@
+version: "3"
+
+services:
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minio
+    ports:
+      - "8078:9000"
+      - "8079:9090"
+    volumes:
+      - /Users/docker/minio/data:/data
+      - /Users/docker/minio/config:/root/.minio
+    environment:
+      - MINIO_ROOT_USER=mindance
+      - MINIO_ROOT_PASSWORD=Mindance+050723
+      - MINIO_VOLUMES=/data
+      - MINIO_SERVER_URL=http://10.44.1.130:8078
+      - MINIO_BROWSER_REDIRECT_URL=http://10.44.1.130:8079
+    command: server --console-address ":9090"
+    privileged: true
+    restart: always
+    networks:
+      - global
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+
+  thumbor:
+    image: ghcr.io/minimalcompact/thumbor
+    container_name: minio-thumbor
+    environment:
+      # https://github.com/MinimalCompact/thumbor/blob/master/thumbor/conf/thumbor.conf.tpl
+      # VIRTUAL_HOST is picked up by nginx-proxy. Here it's set for localhost
+      # but you usually need to point it to your domain, e.g. thumbor.example.com
+      - VIRTUAL_HOST=localhost
+      # THUMBOR_NUM_PROCESSES control how many processes run inside the container
+      # Normally this is set in connection with the number of CPU cores
+      # Note however that you can also use the docker-compose scale option to dynamically
+      # scale your thumbor instances
+      - THUMBOR_NUM_PROCESSES=4
+      # this would allow CORS from any origin (you can restrict to specific origins if you want)
+      - CORS_ALLOW_ORIGIN=*
+      # returns a webp image if browser Accept headers match
+      - AUTO_WEBP=False
+      # nginx-proxy does caching automatically, so no need to store the result storage cache
+      # (this greatly speeds up and saves on CPU)
+      # - RESULT_STORAGE=thumbor.result_storages.no_storage
+      - RESULT_STORAGE_STORES_UNSAFE=True
+      - RESULT_STORAGE=thumbor.result_storages.file_storage
+      - RESULT_STORAGE_EXPIRATION_SECONDS=864000
+      - RESULT_STORAGE_FILE_STORAGE_ROOT_PATH=/tmp
+      - STORAGE=thumbor.storages.file_storage
+      - RESPECT_ORIENTATION=True
+      - PRESERVE_EXIF_INFO=True
+      - HTTP_LOADER_PROXY_HOST="http://10.44.1.129"
+      - HTTP_LOADER_PROXY_PORT=8080
+      - TC_AWS_REGION=pme-dev
+      - TC_AWS_ENDPOINT=http://10.44.1.130:8078
+      - TC_AWS_LOADER_BUCKET=mindance-dev
+      - TC_AWS_ENABLE_HTTP_LOADER=True
+      - LOADER=tc_aws.loaders.s3_loader
+    volumes:
+      - /Users/docker/thumbor/aws:/app/.aws
+      - /Users/docker/thumbor/cache_storage:/tmp
+    restart: always
+    networks:
+      - global
+    ports:
+      - "8075:80"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+
+networks:
+  global:
+    name: global
+    external: true
