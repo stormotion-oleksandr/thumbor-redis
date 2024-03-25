@@ -1,23 +1,7 @@
 version: "3.8"
 services:
   thumbor:
-    build: 
-      context: .
-      dockerfile_inline: |
-        FROM ghcr.io/minimalcompact/thumbor
-        ENV REDIS_STORAGE_IGNORE_ERRORS=True \
-            REDIS_STORAGE_SERVER_PORT=6379 \
-            REDIS_STORAGE_SERVER_HOST=redis \
-            REDIS_STORAGE_SERVER_DB=0 \
-            REDIS_STORAGE_SERVER_PASSWORD=None \
-            REDIS_STORAGE_MODE=single_node \
-            REDIS_RESULT_STORAGE_IGNORE_ERRORS=True \
-            REDIS_RESULT_STORAGE_SERVER_PORT=6379 \
-            REDIS_RESULT_STORAGE_SERVER_HOST=redis \
-            REDIS_RESULT_STORAGE_SERVER_DB=0 \
-            REDIS_RESULT_STORAGE_SERVER_PASSWORD=None \
-            REDIS_RESULT_STORAGE_MODE=single_node
-        RUN pip install --no-cache-dir tc-redis
+    image: ghcr.io/minimalcompact/thumbor
     container_name: minio-thumbor
     environment:
       # https://github.com/MinimalCompact/thumbor/blob/master/thumbor/conf/thumbor.conf.tpl
@@ -50,20 +34,36 @@ services:
       - TC_AWS_LOADER_BUCKET=mindance-dev
       - TC_AWS_ENABLE_HTTP_LOADER=True
       - LOADER=tc_aws.loaders.s3_loader
+      # - Redis setup
+      - REDIS_STORAGE_IGNORE_ERRORS=True
+      - REDIS_STORAGE_SERVER_PORT=6379
+      - REDIS_STORAGE_SERVER_HOST=redis
+      - REDIS_STORAGE_SERVER_DB=0
+      - REDIS_STORAGE_SERVER_PASSWORD=None
+      - REDIS_STORAGE_MODE=single_node
+      - REDIS_RESULT_STORAGE_IGNORE_ERRORS=True
+      - REDIS_RESULT_STORAGE_SERVER_PORT=6379
+      - REDIS_RESULT_STORAGE_SERVER_HOST=redis
+      - REDIS_RESULT_STORAGE_SERVER_DB=0
+      - REDIS_RESULT_STORAGE_SERVER_PASSWORD=None
+      - REDIS_RESULT_STORAGE_MODE=single_node
     volumes:
-      - /Users/docker/thumbor/aws:/app/.aws
-      - /Users/docker/thumbor/cache_storage:/tmp
+      # - /Users/docker/thumbor/aws:/app/.aws
+      # - /Users/docker/thumbor/cache_storage:/tmp
+      - ./data/thumbor/aws:/app/.aws
+      - ./data/thumbor/cache_storage:/tmp
+    # command: pip install --no-cache-dir tc-redis && thumbor
     depends_on:
       - redis
     restart: always
     ports:
       - "8075:80"
-    networks:
-      - global
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
+    # networks:
+    #   - global
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1'
   redis:
     image: redis:latest
     container_name: thumbor-redis
@@ -71,9 +71,10 @@ services:
       - "8071:6379"
     command: redis-server --save 20 1 --loglevel warning
     volumes:
-      - /Users/docker/thumbor/redis:/data
+      # - /Users/docker/thumbor/redis:/data
+      - ./data/thumbor/redis:/data
 
-networks:
-  global:
-    name: global
-    external: true
+# networks:
+#   global:
+#     name: global
+#     external: true
