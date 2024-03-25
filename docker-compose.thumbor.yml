@@ -52,9 +52,7 @@ services:
       # - /Users/docker/thumbor/cache_storage:/tmp
       - ./data/thumbor/aws:/app/.aws
       - ./data/thumbor/cache_storage:/tmp
-    # command: pip install tc_redis && thumbor
-    # command: sh -c "pip install tc_redis" && thumbor --port=$THUMBOR_PORT -l ${LOG_LEVEL:-debug} --processes=${THUMBOR_NUM_PROCESSES:-1}
-    command: sh -c "pip install tc_redis && echo $? && echo $? && thumbor --port=8075 -l ${LOG_LEVEL:-debug} --processes=${THUMBOR_NUM_PROCESSES:-1} && echo $?"
+    command: sh -c "pip install tc_redis && thumbor --port=8075"
     depends_on:
       - redis
     restart: always
